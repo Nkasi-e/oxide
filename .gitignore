@@ -1,0 +1,9 @@
+.env
+**/target/
+**/Cargo.lock
+**/.DS_Store
+**/.idea/
+**/.vscode/
+**/.cursor/
+**/.env.*
+*.log

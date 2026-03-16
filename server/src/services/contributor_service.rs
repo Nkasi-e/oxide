@@ -22,15 +22,27 @@ impl ContributorService {
         &self,
         contributors: &[GitHubContributor],
     ) -> AppResult<Vec<ContributorRecord>> {
-        let upserts = contributors
+        let upserts: Vec<UpsertContributorInput> = contributors
             .iter()
-            .map(|c| UpsertContributorInput {
-                github_id: c.id,
-                username: c.login.clone(),
-                avatar_url: c.avatar_url.clone(),
-                profile_url: c.html_url.clone(),
+            .enumerate()
+            .map(|(i, c)| {
+                let github_id = c.id.unwrap_or_else(|| -((i as i64) + 1));
+                let username = c
+                    .login
+                    .clone()
+                    .unwrap_or_else(|| format!("anonymous-{}", i + 1));
+                let profile_url = c
+                    .html_url
+                    .clone()
+                    .unwrap_or_else(|| "https://github.com".to_string());
+                UpsertContributorInput {
+                    github_id,
+                    username,
+                    avatar_url: c.avatar_url.clone(),
+                    profile_url,
+                }
             })
-            .collect::<Vec<_>>();
+            .collect();
 
         self.db.upsert_contributors_bulk(&upserts).await
     }
@@ -41,22 +53,18 @@ impl ContributorService {
         contributor_records: &[ContributorRecord],
         contributor_stats: &[GitHubContributor],
     ) -> AppResult<()> {
-        let inputs = contributor_records
+        let inputs: Vec<RepoContributorInput> = contributor_records
             .iter()
-            .filter_map(|record| {
-                contributor_stats
-                    .iter()
-                    .find(|c| c.id == record.github_id)
-                    .map(|stats| RepoContributorInput {
-                        contributor_id: record.id,
-                        commits: stats.contributions,
-                        additions: 0,
-                        deletions: 0,
-                        first_commit_at: None,
-                        last_commit_at: None,
-                    })
+            .zip(contributor_stats.iter())
+            .map(|(record, stats)| RepoContributorInput {
+                contributor_id: record.id,
+                commits: stats.contributions,
+                additions: 0,
+                deletions: 0,
+                first_commit_at: None,
+                last_commit_at: None,
             })
-            .collect::<Vec<_>>();
+            .collect();
 
         self.db.replace_repo_contributors(repo_id, &inputs).await
     }

@@ -7,3 +7,4 @@
 **/.cursor/
 **/.env.*
 *.log
+**/node_modules/

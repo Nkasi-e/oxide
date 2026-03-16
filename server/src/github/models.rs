@@ -12,6 +12,8 @@ pub struct GitHubRepository {
     #[serde(rename = "stargazers_count")]
     pub stars: i32,
     pub forks: i32,
+    #[serde(rename = "open_issues_count", default)]
+    pub open_issues: i32,
     pub language: Option<String>,
     pub owner: GitHubOwner,
     pub created_at: DateTime<Utc>,
@@ -25,11 +27,15 @@ pub struct GitHubOwner {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GitHubContributor {
-    pub id: i64,
-    pub login: String,
+    /// Can be null for anonymous contributors (when anon=1).
+    #[serde(default)]
+    pub id: Option<i64>,
+    #[serde(default)]
+    pub login: Option<String>,
     pub contributions: i32,
     pub avatar_url: Option<String>,
-    pub html_url: String,
+    #[serde(default)]
+    pub html_url: Option<String>,
 }
 
 pub type GitHubLanguages = HashMap<String, i64>;

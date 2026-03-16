@@ -42,8 +42,11 @@ impl GitHubClient {
             let url = format!("{GITHUB_API_BASE}/repos/{owner}/{repo}/contributors");
             let page_data: Vec<GitHubContributor> = self
                 .send_json(|| {
-                    self.authenticated_get(&url)
-                        .query(&[("per_page", "100"), ("page", &page.to_string())])
+                    self.authenticated_get(&url).query(&[
+                        ("per_page", "100"),
+                        ("page", &page.to_string()),
+                        ("anon", "1"),
+                    ])
                 })
                 .await?;
 

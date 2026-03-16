@@ -35,6 +35,7 @@ impl RepoService {
             description: repo.description,
             stars: repo.stars,
             forks: repo.forks,
+            open_issues: repo.open_issues,
             language: repo.language,
             created_at: to_utc(repo.created_at),
             updated_at: to_utc(repo.updated_at),

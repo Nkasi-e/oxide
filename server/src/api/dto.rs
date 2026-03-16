@@ -15,6 +15,7 @@ pub struct RepositoryResponse {
     pub description: Option<String>,
     pub stars: i32,
     pub forks: i32,
+    pub open_issues: i32,
     pub language: Option<String>,
     pub last_synced_at: DateTime<Utc>,
 }
@@ -28,6 +29,7 @@ impl From<RepositoryRecord> for RepositoryResponse {
             description: value.description,
             stars: value.stars,
             forks: value.forks,
+            open_issues: value.open_issues,
             language: value.language,
             last_synced_at: value.last_synced_at,
         }
@@ -47,6 +49,13 @@ pub enum GalaxyResponse {
         owner: String,
         repo: String,
     },
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct GalaxyQuery {
+    /// When true, skip cache and enqueue re-ingestion so the next request gets fresh GitHub data.
+    #[serde(default)]
+    pub refresh: bool,
 }
 
 #[derive(Debug, Deserialize)]

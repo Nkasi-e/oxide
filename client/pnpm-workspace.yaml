@@ -1,0 +1,4 @@
+# Allow these dependencies to run install/build scripts (required by Next.js transitive deps).
+onlyBuiltDependencies:
+  - sharp
+  - unrs-resolver

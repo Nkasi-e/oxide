@@ -5,21 +5,26 @@ use axum::{
 
 use crate::{
     AppState,
-    api::dto::{GalaxyResponse, RepositoryResponse, SearchQuery, SearchResponse},
+    api::dto::{GalaxyQuery, GalaxyResponse, RepositoryResponse, SearchQuery, SearchResponse},
     error::{AppError, AppResult},
 };
 
 pub async fn get_galaxy(
     State(state): State<AppState>,
     Path((owner, repo)): Path<(String, String)>,
+    Query(query): Query<GalaxyQuery>,
 ) -> AppResult<Json<GalaxyResponse>> {
-    if let Some(cached) = state.galaxy_service.get_cached(&owner, &repo).await? {
-        let layout = state.galaxy_service.parse_layout(&cached)?;
-        return Ok(Json(GalaxyResponse::Ready {
-            version: cached.version,
-            generated_at: cached.generated_at,
-            galaxy: layout,
-        }));
+    let use_cache = !query.refresh;
+
+    if use_cache {
+        if let Some(cached) = state.galaxy_service.get_cached(&owner, &repo).await? {
+            let layout = state.galaxy_service.parse_layout(&cached)?;
+            return Ok(Json(GalaxyResponse::Ready {
+                version: cached.version,
+                generated_at: cached.generated_at,
+                galaxy: layout,
+            }));
+        }
     }
 
     state
@@ -29,7 +34,11 @@ pub async fn get_galaxy(
         .map_err(|_| AppError::QueueUnavailable)?;
 
     Ok(Json(GalaxyResponse::Loading {
-        message: "Repository is being ingested and galaxy will be available shortly".to_string(),
+        message: if use_cache {
+            "Repository is being ingested and galaxy will be available shortly".to_string()
+        } else {
+            "Refresh queued. Re-run ingestion will update repo and contributors; reload in a moment.".to_string()
+        },
         owner,
         repo,
     }))
@@ -56,6 +65,7 @@ pub async fn search_repositories(
         return Err(AppError::InvalidRequest("query parameter 'q' is required".to_string()));
     }
 
+    // Prefer cached results from DB (fast, no GitHub rate limit).
     let cached = state.repo_service.search_local(&params.q).await?;
     if !cached.is_empty() {
         let items = cached.into_iter().map(Into::into).collect();
@@ -66,15 +76,15 @@ pub async fn search_repositories(
         }));
     }
 
-    state
-        .ingestion_scheduler
-        .enqueue_search_warmup(&params.q)
-        .await
-        .map_err(|_| AppError::QueueUnavailable)?;
+    // No cache: call GitHub search so the user sees results immediately.
+    let remote = state.repo_service.search_remote(&params.q).await?;
+    let items = remote.into_iter().map(Into::into).collect();
+    // Warm cache in background so next time we can serve from DB.
+    let _ = state.ingestion_scheduler.enqueue_search_warmup(&params.q).await;
 
     Ok(Json(SearchResponse {
-        status: "loading".to_string(),
-        message: Some("Search warmup enqueued. Retry shortly for cached results.".to_string()),
-        items: vec![],
+        status: "ready".to_string(),
+        message: None,
+        items,
     }))
 }

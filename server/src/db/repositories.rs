@@ -27,9 +27,9 @@ impl DbRepository {
         let record = sqlx::query_as::<_, RepositoryRecord>(
             r#"
             INSERT INTO repositories (
-                github_id, owner, name, full_name, description, stars, forks, language, created_at, updated_at, last_synced_at
+                github_id, owner, name, full_name, description, stars, forks, open_issues, language, created_at, updated_at, last_synced_at
             )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW())
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW())
             ON CONFLICT (github_id) DO UPDATE SET
                 owner = EXCLUDED.owner,
                 name = EXCLUDED.name,
@@ -37,10 +37,11 @@ impl DbRepository {
                 description = EXCLUDED.description,
                 stars = EXCLUDED.stars,
                 forks = EXCLUDED.forks,
+                open_issues = EXCLUDED.open_issues,
                 language = EXCLUDED.language,
                 updated_at = EXCLUDED.updated_at,
                 last_synced_at = NOW()
-            RETURNING id, github_id, owner, name, full_name, description, stars, forks, language, created_at, updated_at, last_synced_at
+            RETURNING id, github_id, owner, name, full_name, description, stars, forks, open_issues, language, created_at, updated_at, last_synced_at
             "#,
         )
         .bind(input.github_id)
@@ -50,6 +51,7 @@ impl DbRepository {
         .bind(&input.description)
         .bind(input.stars)
         .bind(input.forks)
+        .bind(input.open_issues)
         .bind(&input.language)
         .bind(input.created_at)
         .bind(input.updated_at)
@@ -63,7 +65,7 @@ impl DbRepository {
         let full_name = format!("{owner}/{repo}");
         let record = sqlx::query_as::<_, RepositoryRecord>(
             r#"
-            SELECT id, github_id, owner, name, full_name, description, stars, forks, language, created_at, updated_at, last_synced_at
+            SELECT id, github_id, owner, name, full_name, description, stars, forks, open_issues, language, created_at, updated_at, last_synced_at
             FROM repositories
             WHERE full_name = $1
             "#,
@@ -83,7 +85,7 @@ impl DbRepository {
         let pattern = format!("%{query}%");
         let rows = sqlx::query_as::<_, RepositoryRecord>(
             r#"
-            SELECT id, github_id, owner, name, full_name, description, stars, forks, language, created_at, updated_at, last_synced_at
+            SELECT id, github_id, owner, name, full_name, description, stars, forks, open_issues, language, created_at, updated_at, last_synced_at
             FROM repositories
             WHERE full_name ILIKE $1 OR description ILIKE $1
             ORDER BY stars DESC
@@ -286,6 +288,7 @@ pub struct RepositoryRecord {
     pub description: Option<String>,
     pub stars: i32,
     pub forks: i32,
+    pub open_issues: i32,
     pub language: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -331,6 +334,7 @@ pub struct UpsertRepositoryInput {
     pub description: Option<String>,
     pub stars: i32,
     pub forks: i32,
+    pub open_issues: i32,
     pub language: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

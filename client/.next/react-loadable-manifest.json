@@ -1,18 +1,1 @@
-{
-  "node_modules/.pnpm/@react-three+drei@9.122.0_@react-three+fiber@8.18.0_@types+react@18.3.28_react-dom@18.2_3c1b315a5ac807794c20401afc51b32d/node_modules/@react-three/drei/core/VideoTexture.js -> hls.js": {
-    "id": "node_modules/.pnpm/@react-three+drei@9.122.0_@react-three+fiber@8.18.0_@types+react@18.3.28_react-dom@18.2_3c1b315a5ac807794c20401afc51b32d/node_modules/@react-three/drei/core/VideoTexture.js -> hls.js",
-    "files": []
-  },
-  "node_modules/.pnpm/@react-three+drei@9.122.0_@react-three+fiber@8.18.0_@types+react@18.3.28_react-dom@18.2_3c1b315a5ac807794c20401afc51b32d/node_modules/@react-three/drei/web/FaceLandmarker.js -> @mediapipe/tasks-vision": {
-    "id": "node_modules/.pnpm/@react-three+drei@9.122.0_@react-three+fiber@8.18.0_@types+react@18.3.28_react-dom@18.2_3c1b315a5ac807794c20401afc51b32d/node_modules/@react-three/drei/web/FaceLandmarker.js -> @mediapipe/tasks-vision",
-    "files": [
-      "static/chunks/_pages-dir-browser_node_modules_pnpm_mediapipe_tasks-vision_0_10_17_node_modules_mediapipe_ta-c02792.js"
-    ]
-  },
-  "pages/repo/[owner]/[repo].tsx -> @/components/GalaxyScene": {
-    "id": "pages/repo/[owner]/[repo].tsx -> @/components/GalaxyScene",
-    "files": [
-      "static/chunks/_pages-dir-browser_components_GalaxyScene_tsx.js"
-    ]
-  }
-}
+{}

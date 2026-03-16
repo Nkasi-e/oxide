@@ -9,8 +9,12 @@ interface AsteroidBeltProps {
   rotation?: [number, number, number];
 }
 
-function AsteroidBeltImpl({ belt, position = [0, 0, 0], rotation = [0, 0, 0] }: AsteroidBeltProps) {
-  const meshRef = useRef<THREE.InstancedMesh | null>(null);
+function AsteroidBeltImpl({
+  belt,
+  position = [0, 0, 0],
+  rotation = [0, 0, 0]
+}: AsteroidBeltProps) {
+  const meshRef = useRef<any>(null);
 
   useEffect(() => {
     const mesh = meshRef.current;
